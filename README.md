@@ -83,8 +83,9 @@ The project includes a Postman collection for testing the module's functionaliti
 3. Select the **Cash desk module.postman_collection.json** file from your file system.
 4. The collection will appear in your Postman workspace. You can now run the requests to interact with the CashDeskModule.
 
-## Configuration
-Configuration details and properties can be found in the src/main/resources directory. Adjust the settings according to your environment requirements.
+[//]: # (## Configuration)
+
+[//]: # (Configuration details and properties can be found in the src/main/resources directory. Adjust the settings according to your environment requirements.)
 
 ## Lombok
 Lombok annotations are used to reduce boilerplate code. Ensure your IDE is configured to handle Lombok annotations. Refer to [Lombok Setup](https://projectlombok.org/setup/overview) for more details.
