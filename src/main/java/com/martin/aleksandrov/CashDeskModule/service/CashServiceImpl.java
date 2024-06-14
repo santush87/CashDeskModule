@@ -97,9 +97,16 @@ public class CashServiceImpl implements CashService {
         if (cashOperation.getType().name().equals("DEPOSIT")) {
             if (currency.equals("BGN")) {
                 cashBalanceBgn.setTotalAmount(cashBalanceBgn.getTotalAmount().add(cashOperation.getAmount()));
+//                cashBalanceBgn.setDenominations(cashOperation.getDenominations().put());
+                for (Map.Entry<String, Integer> entry : operationDenominations.entrySet()) {
+                    cashBalanceBgn.getDenominations().merge(entry.getKey(), entry.getValue(), Integer::sum);
+                }
             }
             if (currency.equals("EUR")) {
                 cashBalanceEur.setTotalAmount(cashBalanceEur.getTotalAmount().add(cashOperation.getAmount()));
+                for (Map.Entry<String, Integer> entry : operationDenominations.entrySet()) {
+                    cashBalanceEur.getDenominations().merge(entry.getKey(), entry.getValue(), Integer::sum);
+                }
             }
             for (Map.Entry<String, Integer> entry : operationDenominations.entrySet()) {
                 operationDenominations.put(entry.getKey(), operationDenominations.getOrDefault(entry.getKey(), 0) + entry.getValue());
