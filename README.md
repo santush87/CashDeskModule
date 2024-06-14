@@ -11,7 +11,7 @@
 
 ## Features
 
-- **Cash Transaction Management**: Handle various cash transactions seamlessly.
+- **Cash Transaction Management**: Handle cash transactions seamlessly.
 - **Integration Ready**: Easily integrates with other systems.
 - **Efficient Object Mapping**: Using ModelMapper for converting DTOs to entities and vice versa.
 - **Reduced Boilerplate**: Using Lombok to minimize boilerplate code.
@@ -67,6 +67,22 @@ Upon starting the program, the following file will be generated:
 2. **TRANSACTION.txt**: This file will store the transaction records.
 
    After each request, both files will be updated accordingly.
+
+## Postman Collection
+The project includes a Postman collection for testing the module's functionalities. The collection file is named Cash desk module.postman_collection.json and contains the following requests:
+
+1. **Withdrawal 1**: Withdraw 100 BGN, denomination: 5x10 BGN, 1x50 BGN.
+2. **Withdrawal 2**: Withdraw 500 EUR, denomination: 10x50 EUR.
+3. **Deposit 1**: Deposit 600 BGN, denomination: 10x10 BGN, 10x50 BGN.
+4. **Deposit 2**: Deposit 200 BGN, denomination: 5x20 EUR, 2x50 EUR.
+5. **Check Balance**: Check the balance and denominations.
+
+## Using the Postman Collection
+1. Open Postman.
+2. Import the collection by clicking on Import in the top left corner.
+3. Select the **Cash desk module.postman_collection.json** file from your file system.
+4. The collection will appear in your Postman workspace. You can now run the requests to interact with the CashDeskModule.
+
 ## Configuration
 Configuration details and properties can be found in the src/main/resources directory. Adjust the settings according to your environment requirements.
 
