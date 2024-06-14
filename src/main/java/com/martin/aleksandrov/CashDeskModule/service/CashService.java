@@ -1,7 +1,6 @@
 package com.martin.aleksandrov.CashDeskModule.service;
 
 import com.martin.aleksandrov.CashDeskModule.exceptions.LowerThanZeroException;
-import com.martin.aleksandrov.CashDeskModule.models.CashOperation;
 import com.martin.aleksandrov.CashDeskModule.models.Cashier;
 import com.martin.aleksandrov.CashDeskModule.models.dtos.CashOperationDto;
 

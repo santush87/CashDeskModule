@@ -1,4 +1,4 @@
-package com.martin.aleksandrov.CashDeskModule.service;
+package com.martin.aleksandrov.CashDeskModule.service.impl;
 
 import com.martin.aleksandrov.CashDeskModule.exceptions.LowerThanZeroException;
 import com.martin.aleksandrov.CashDeskModule.models.CashOperation;
@@ -7,6 +7,7 @@ import com.martin.aleksandrov.CashDeskModule.models.CashBalance;
 import com.martin.aleksandrov.CashDeskModule.models.Cashier;
 import com.martin.aleksandrov.CashDeskModule.models.dtos.CashOperationDto;
 import com.martin.aleksandrov.CashDeskModule.models.enums.CurrencyType;
+import com.martin.aleksandrov.CashDeskModule.service.CashService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -54,15 +55,14 @@ public class CashServiceImpl implements CashService {
             totalSum = totalSum.add(product);
         }
 
-        if (cashOperation.getAmount().compareTo(totalSum) < 0 ||
-                cashOperation.getAmount().compareTo(totalSum) > 0) {
+        if (cashOperation.getAmount().compareTo(totalSum) != 0) {
             throw new IllegalArgumentException("The amount is not equal to the total sum from denominations");
         }
 
 
         this.updateBalance(cashOperation);
         this.recordTransaction(cashOperation);
-        return this.getBalances();
+        return "Operation processed successfully.";
     }
 
 
