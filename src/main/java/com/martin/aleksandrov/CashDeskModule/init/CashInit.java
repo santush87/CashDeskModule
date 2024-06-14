@@ -29,12 +29,12 @@ public class CashInit implements CommandLineRunner {
 
         if (!exists) {
             Cashier cashier = new Cashier();
-            Map<Integer, Double> bgn_balance = new HashMap<>();
-            bgn_balance.put(50, 10.0);
-            bgn_balance.put(10, 50.0);
-            Map<Integer, Double> eur_balance = new HashMap<>();
-            eur_balance.put(100, 10.0);
-            eur_balance.put(20, 50.0);
+            Map<String, Integer> bgn_balance = new HashMap<>();
+            bgn_balance.put("10", 50);
+            bgn_balance.put("50", 10);
+            Map<String, Integer> eur_balance = new HashMap<>();
+            eur_balance.put("10", 100);
+            eur_balance.put("50", 20);
 
             cashier.setName("MARTINA");
             CashBalance cashBalanceBGN = CashBalance.builder()

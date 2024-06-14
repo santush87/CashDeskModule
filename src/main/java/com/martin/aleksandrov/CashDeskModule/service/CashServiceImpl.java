@@ -5,9 +5,10 @@ import com.martin.aleksandrov.CashDeskModule.models.CashOperation;
 import com.martin.aleksandrov.CashDeskModule.models.CashBalance;
 
 import com.martin.aleksandrov.CashDeskModule.models.Cashier;
+import com.martin.aleksandrov.CashDeskModule.models.dtos.CashOperationDto;
 import com.martin.aleksandrov.CashDeskModule.models.enums.CurrencyType;
-import com.martin.aleksandrov.CashDeskModule.models.enums.OperationType;
-import org.springframework.core.io.ClassPathResource;
+import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -18,40 +19,53 @@ import java.util.Map;
 import java.util.*;
 
 @Service
+@AllArgsConstructor
 public class CashServiceImpl implements CashService {
 
     private static final String TRANSACTION_FILE = "TRANSACTIONS.txt";
     private static final String BALANCE_FILE = "BALANCES.txt";
-//    private static final Map<String, CashBalance> balances = new HashMap<>();
+    private final ModelMapper modelMapper;
 
     @Override
-    public String processOperation(CashOperation cashOperation) {
-        try {
-            this.recordTransaction(cashOperation);
-            this.updateBalance(cashOperation);
-            return "Operation processed successfully.";
-        } catch (IOException | LowerThanZeroException e) {
-            return "Error processing operation: " + e.getMessage();
+    public String processOperation(CashOperationDto cashOperationDto) throws LowerThanZeroException, IOException {
+        CashOperation cashOperation = this.modelMapper.map(cashOperationDto, CashOperation.class);
+
+        if (cashOperation.getCurrency() == null) {
+            throw new IllegalArgumentException("Invalid currency");
         }
+        if (cashOperation.getType() == null){
+            throw new IllegalArgumentException("Invalid type");
+        }
+        if (cashOperation.getAmount() == null) {
+            throw new IllegalArgumentException("Invalid amount");
+        }
+        if (cashOperation.getDenominations().isEmpty()) {
+            throw new IllegalArgumentException("Invalid denominations");
+        }
+
+        this.updateBalance(cashOperation);
+        this.recordTransaction(cashOperation);
+        return this.getBalances();
+
     }
 
 
     private void recordTransaction(CashOperation cashOperation) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACTION_FILE, true))) {
+        try (FileWriter writer = new FileWriter(TRANSACTION_FILE, true)) {
             writer.write(cashOperation.getType().name() + "; " + cashOperation.getCurrency().name() + "; " + cashOperation.getAmount() + ", "
                     + this.denominationsToString(cashOperation.getDenominations()) + System.lineSeparator());
         }
     }
 
     @Override
-    public String denominationsToString(Map<Integer, Double> denominations) {
+    public String denominationsToString(Map<String, Integer> denominations) {
         StringBuilder sb = new StringBuilder();
-        List<Map.Entry<Integer, Double>> entryList = new ArrayList<>(denominations.entrySet());
-        Iterator<Map.Entry<Integer, Double>> iterator = entryList.iterator();
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(denominations.entrySet());
+        Iterator<Map.Entry<String, Integer>> iterator = entryList.iterator();
 
         while (iterator.hasNext()) {
-            Map.Entry<Integer, Double> entry = iterator.next();
-            sb.append(entry.getKey()).append("x").append(entry.getValue());
+            Map.Entry<String, Integer> entry = iterator.next();
+            sb.append(entry.getValue()).append("x").append(entry.getKey());
             if (iterator.hasNext()) {
                 sb.append(", ");
             }
@@ -60,15 +74,26 @@ public class CashServiceImpl implements CashService {
     }
 
 
-    private void updateBalance(CashOperation cashOperation) throws IOException, LowerThanZeroException {
+    private void updateBalance(CashOperation cashOperation) throws LowerThanZeroException {
         Cashier cashier = getCashier();
 
         String currency = cashOperation.getCurrency().name();
 
         CashBalance cashBalanceBgn = cashier.getCashBalance_BGN();
         CashBalance cashBalanceEur = cashier.getCashBalance_EUR();
-//        CashBalance balance = cashier.get(cashOperation.getCurrency().name());
 
+        Map<String, Integer> currentDenominations;
+        Map<String, Integer> operationDenominations = cashOperation.getDenominations();
+
+        if (currency.equals("EUR")) {
+            currentDenominations = cashBalanceEur.getDenominations();
+        } else if (currency.equals("BGN")) {
+            currentDenominations = cashBalanceBgn.getDenominations();
+        } else {
+            throw new IllegalArgumentException("Unsupported currency: " + cashOperation.getCurrency());
+        }
+
+//        DEPOSIT OPERATION
         if (cashOperation.getType().name().equals("DEPOSIT")) {
             if (currency.equals("BGN")) {
                 cashBalanceBgn.setTotalAmount(cashBalanceBgn.getTotalAmount().add(cashOperation.getAmount()));
@@ -76,7 +101,11 @@ public class CashServiceImpl implements CashService {
             if (currency.equals("EUR")) {
                 cashBalanceEur.setTotalAmount(cashBalanceEur.getTotalAmount().add(cashOperation.getAmount()));
             }
-//            balance.setTotalAmount(balance.getTotalAmount().add(cashOperation.getAmount()));
+            for (Map.Entry<String, Integer> entry : operationDenominations.entrySet()) {
+                operationDenominations.put(entry.getKey(), operationDenominations.getOrDefault(entry.getKey(), 0) + entry.getValue());
+            }
+
+//            WITHDRAW OPERATION
         } else if (cashOperation.getType().name().equals("WITHDRAW")) {
             if (currency.equals("BGN")) {
                 if (cashBalanceBgn.getTotalAmount().compareTo(cashOperation.getAmount()) < 0) {
@@ -91,84 +120,35 @@ public class CashServiceImpl implements CashService {
                 cashBalanceEur.setTotalAmount(cashBalanceEur.getTotalAmount().subtract(cashOperation.getAmount()));
             }
 
-        }
-        updateDenominations(cashOperation);
-        saveBalances(BALANCE_FILE, cashier);
-    }
+            for (Map.Entry<String, Integer> entry : operationDenominations.entrySet()) {
+                String banknote = entry.getKey();
+                Integer banknoteCount = entry.getValue();
 
-    private void updateDenominations(CashOperation cashOperation) {
-        Cashier cashier = getCashier();
-
-        Map<Integer, Double> currentDenominations = null;
-        Map<Integer, Double> operationDenominations = cashOperation.getDenominations();
-        if (cashOperation.getCurrency().name().equals("EUR")) {
-            currentDenominations = cashier.getCashBalance_EUR().getDenominations();
-        } else if (cashOperation.getCurrency().name().equals("BGN")) {
-            currentDenominations = cashier.getCashBalance_BGN().getDenominations();
-        } else {
-            throw new IllegalArgumentException("Unsupported currency: " + cashOperation.getCurrency());
-        }
-
-        if (cashOperation.getType().equals(OperationType.DEPOSIT)) {
-            for (Map.Entry<Integer, Double> entry : operationDenominations.entrySet()) {
-                currentDenominations.put(entry.getKey(), currentDenominations.getOrDefault(entry.getKey(), 0.0) + entry.getValue());
-            }
-        } else if (cashOperation.getType().equals(OperationType.WITHDRAW)) {
-            for (Map.Entry<Integer, Double> entry : operationDenominations.entrySet()) {
-                Integer denomination = entry.getKey();
-                Double amount = entry.getValue();
-
-                if (currentDenominations.containsKey(denomination)) {
-                    Double currentAmount = currentDenominations.get(denomination);
-                    if (currentAmount >= amount) {
-                        currentDenominations.put(denomination, currentAmount - amount);
-                        // Remove the denomination if the amount becomes zero
-                        if (currentDenominations.get(denomination) == 0) {
-                            currentDenominations.remove(denomination);
+                if (currentDenominations.containsKey(banknote)) {
+                    Integer currentAmount = currentDenominations.get(banknote);
+                    if (currentAmount >= banknoteCount) {
+                        currentDenominations.put(banknote, currentAmount - banknoteCount);
+                        // Remove the banknote if the banknoteCount becomes zero
+                        if (currentDenominations.get(banknote) == 0) {
+                            currentDenominations.remove(banknote);
                         }
                     } else {
-                        throw new IllegalArgumentException("Not enough money in denomination: " + denomination);
+                        throw new IllegalArgumentException("Not enough money in banknote: " + banknote);
                     }
                 } else {
-                    throw new IllegalArgumentException("No such denomination available: " + denomination);
+                    throw new IllegalArgumentException("No such banknote available: " + banknote);
                 }
             }
-        } else {
-            throw new IllegalArgumentException("Unsupported operation type: " + cashOperation.getType());
+
         }
 
-        // Update the cashier's denominations
-        if (cashOperation.getCurrency().equals(CurrencyType.EUR)) {
-            cashier.getCashBalance_EUR().setDenominations(currentDenominations);
-        } else if (cashOperation.getCurrency().equals(CurrencyType.BGN)) {
-            cashier.getCashBalance_BGN().setDenominations(currentDenominations);
-        }
-
-//        if (cashOperation.getType().name().equals("DEPOSIT")) {
-//            for (Map.Entry<Integer, Double> entry : operationDenominations.entrySet()) {
-//                currentDenominations.put(entry.getKey(), currentDenominations.getOrDefault(entry.getKey(), 0.0) + entry.getValue());
-//            }
-//        } else if (cashOperation.getType().name().equals("WITHDRAW")) {
-//            operationDenominations.forEach((k, v) -> {
-//                if (currentDenominations.get(k) != null) {
-//                    currentDenominations.put(k, currentDenominations.get(k) - v);
-//                    if (currentDenominations.get(k) == 0) {
-//                        currentDenominations.remove(k);
-//                    } else if (currentDenominations.get(k) < 0) {
-//                        throw new IllegalArgumentException("Not enough money!");
-//                    }
-//                } else {
-//                    throw new IllegalArgumentException("There is no denomination with this operation!");
-//                }
-//            });
-//        }
-//        balance.setDenominations(currentDenominations);
         saveBalances(BALANCE_FILE, cashier);
     }
+
 
     @Override
     public void saveBalances(String balanceFile, Cashier cashier) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(balanceFile))) {
+        try (FileWriter writer = new FileWriter(balanceFile)) {
             writer.write("Cashier: " + cashier.getName() + System.lineSeparator());
             writer.write(cashier.getCashBalance_BGN().getCurrency().name() + "; " + cashier.getCashBalance_BGN().getTotalAmount() + "; " +
                     denominationsToString(cashier.getCashBalance_BGN().getDenominations()) + System.lineSeparator());
@@ -181,14 +161,20 @@ public class CashServiceImpl implements CashService {
 
     private Cashier getCashier() {
         Cashier cashier = new Cashier();
-        ClassPathResource resource = new ClassPathResource(BALANCE_FILE);
+        CashBalance bgnCash = new CashBalance();
+        bgnCash.setCurrency(CurrencyType.BGN);
+
+        CashBalance eurCash = new CashBalance();
+        eurCash.setCurrency(CurrencyType.EUR);
+
+        cashier.setCashBalance_BGN(bgnCash);
+        cashier.setCashBalance_EUR(eurCash);
 
         String firstLine;
         String secondLine;
         String thirdLine;
 
-        try (InputStream inputStream = resource.getInputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(BALANCE_FILE))) {
 
             firstLine = reader.readLine();
             cashier.setName(firstLine.split(": ")[1]);
@@ -209,12 +195,16 @@ public class CashServiceImpl implements CashService {
     private void setCashBalanceAndAmount(String line, CurrencyType currencyType, Cashier cashier) {
         BigDecimal amount = new BigDecimal(line.split("; ")[1]);
 
-        String[] cashBal = line.split("; ")[2].split(", ");
-        Map<Integer, Double> denominations = new HashMap<>();
-        for (String s : cashBal) {
-            String count = s.split("x")[0];
-            String sum = s.split("x")[1];
-            denominations.put(Integer.parseInt(count), Double.parseDouble(sum));
+        Map<String, Integer> denominations = new HashMap<>();
+
+        String[] parts = line.split("; ");
+        if (parts.length == 3) {
+            String[] cashBal = parts[2].split(", ");
+            for (String s : cashBal) {
+                String banknoteCount = s.split("x")[0];
+                String banknote = s.split("x")[1];
+                denominations.put(banknote, Integer.parseInt(banknoteCount));
+            }
         }
         if (currencyType == CurrencyType.BGN) {
             cashier.getCashBalance_BGN().setTotalAmount(amount);
@@ -224,6 +214,16 @@ public class CashServiceImpl implements CashService {
             cashier.getCashBalance_EUR().setTotalAmount(amount);
             cashier.getCashBalance_EUR().setDenominations(denominations);
         }
+    }
+
+    @Override
+    public String getBalances() {
+        Cashier cashier = getCashier();
+        return cashier.getName() + System.lineSeparator() +
+                cashier.getCashBalance_BGN().getCurrency().name() + "; " + cashier.getCashBalance_BGN().getTotalAmount() + "; " +
+                denominationsToString(cashier.getCashBalance_BGN().getDenominations()) + System.lineSeparator() +
+                cashier.getCashBalance_EUR().getCurrency().name() + "; " + cashier.getCashBalance_EUR().getTotalAmount() + "; " +
+                denominationsToString(cashier.getCashBalance_EUR().getDenominations()) + System.lineSeparator();
     }
 
 }

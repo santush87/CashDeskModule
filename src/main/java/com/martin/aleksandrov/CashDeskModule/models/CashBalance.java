@@ -17,5 +17,5 @@ public class CashBalance {
 
     private CurrencyType currency;
     private BigDecimal totalAmount;
-    private Map<Integer, Double> denominations;
+    private Map<String, Integer> denominations;
 }

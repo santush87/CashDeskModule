@@ -17,5 +17,5 @@ public class CashOperation {
     private OperationType type;
     private CurrencyType currency;
     private BigDecimal amount;
-    private Map<Integer, Double> denominations;
+    private Map<String, Integer> denominations;
 }
