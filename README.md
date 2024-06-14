@@ -20,7 +20,8 @@
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Usage](#usage)
+
+[//]: # (- [Usage]&#40;#usage&#41;)
 
 [//]: # (- [Contributing]&#40;#contributing&#41;)
 
@@ -46,20 +47,24 @@ Ensure you have the following installed:
     ```bash
    mvn clean install
 
-## Usage
+[//]: # (## Usage)
 
-To run the module, execute the following command:
+[//]: # ()
+[//]: # (To run the module, execute the following command:)
 
-   ```bash
-   mvn exec:java -Dexec.mainClass="com.martin.aleksandrov.CashDeskModule.CashDeskModuleApplication" 
-   ```
+[//]: # ()
+[//]: # (   ```bash)
+
+[//]: # (   mvn exec:java -Dexec.mainClass="com.martin.aleksandrov.CashDeskModule.CashDeskModuleApplication" )
+
+[//]: # (   ```)
 ## Files Generated
 Upon starting the program, the following file will be generated:
 
-1. BALANCE.txt: This file will contain the initial balance data and a user named MARTINA.
+1. **BALANCE.txt**: This file will contain the initial balance data and a user named MARTINA.
 
    After the first request, an additional file will be generated:
-2. TRANSACTION.txt: This file will store the transaction records.
+2. **TRANSACTION.txt**: This file will store the transaction records.
 
    After each request, both files will be updated accordingly.
 ## Configuration
