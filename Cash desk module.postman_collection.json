@@ -1,0 +1,198 @@
+{
+	"info": {
+		"_postman_id": "117523bd-f571-4691-bb20-e6d279d09c8a",
+		"name": "Cash desk module",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33585022"
+	},
+	"item": [
+		{
+			"name": "1",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hX8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"WITHDRAW\", \r\n    \"currency\": \"BGN\", \r\n    \"amount\": \"100.00\", \r\n    \"denominations\": \r\n        {\r\n            \"10\": 5, \"50\": 1\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/cash-operation",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				},
+				"description": "1"
+			},
+			"response": []
+		},
+		{
+			"name": "2",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hX8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"WITHDRAW\", \r\n    \"currency\": \"EUR\", \r\n    \"amount\": \"500.00\", \r\n    \"denominations\": \r\n        {\r\n            \"50\": 10\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/cash-operation",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				},
+				"description": "Withdrawal 2: 500 EUR, denomination: 10x50 EUR"
+			},
+			"response": []
+		},
+		{
+			"name": "3",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hX8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"DEPOSIT\", \r\n    \"currency\": \"BGN\", \r\n    \"amount\": \"600.00\", \r\n    \"denominations\": \r\n        {\r\n            \"10\": 10, \"50\": 10\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/cash-operation",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				},
+				"description": "Deposit 1: 600 BGN, denomination: 10x10 BGN, 10x50 BGN"
+			},
+			"response": []
+		},
+		{
+			"name": "4",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hX8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"DEPOSIT\", \r\n    \"currency\": \"EUR\", \r\n    \"amount\": \"200.00\", \r\n    \"denominations\": \r\n        {\r\n            \"20\": 5, \"50\": 2\r\n        }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/cash-operation",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-operation"
+					]
+				},
+				"description": "Deposit 2: 200 BGN, denomination: 5x20 EUR, 2x50 EUR"
+			},
+			"response": []
+		},
+		{
+			"name": "5",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "FIB-X-AUTH",
+						"value": "f9Uie8nNf112hX8s",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v1/cash-balance",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"cash-balance"
+					]
+				},
+				"description": "Check the balance and denominations"
+			},
+			"response": []
+		}
+	]
+}
