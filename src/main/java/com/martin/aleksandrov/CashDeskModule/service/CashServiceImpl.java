@@ -33,7 +33,7 @@ public class CashServiceImpl implements CashService {
         if (cashOperation.getCurrency() == null) {
             throw new IllegalArgumentException("Invalid currency");
         }
-        if (cashOperation.getType() == null){
+        if (cashOperation.getType() == null) {
             throw new IllegalArgumentException("Invalid type");
         }
         if (cashOperation.getAmount() == null) {
@@ -43,10 +43,26 @@ public class CashServiceImpl implements CashService {
             throw new IllegalArgumentException("Invalid denominations");
         }
 
+        BigDecimal totalSum = BigDecimal.ZERO;
+        for (Map.Entry<String, Integer> entry : cashOperation.getDenominations().entrySet()) {
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+
+            BigDecimal keyAsBigDecimal = new BigDecimal(key);
+            BigDecimal product = keyAsBigDecimal.multiply(new BigDecimal(value));
+
+            totalSum = totalSum.add(product);
+        }
+
+        if (cashOperation.getAmount().compareTo(totalSum) < 0 ||
+                cashOperation.getAmount().compareTo(totalSum) > 0) {
+            throw new IllegalArgumentException("The amount is not equal to the total sum from denominations");
+        }
+
+
         this.updateBalance(cashOperation);
         this.recordTransaction(cashOperation);
         return this.getBalances();
-
     }
 
 
@@ -97,7 +113,6 @@ public class CashServiceImpl implements CashService {
         if (cashOperation.getType().name().equals("DEPOSIT")) {
             if (currency.equals("BGN")) {
                 cashBalanceBgn.setTotalAmount(cashBalanceBgn.getTotalAmount().add(cashOperation.getAmount()));
-//                cashBalanceBgn.setDenominations(cashOperation.getDenominations().put());
                 for (Map.Entry<String, Integer> entry : operationDenominations.entrySet()) {
                     cashBalanceBgn.getDenominations().merge(entry.getKey(), entry.getValue(), Integer::sum);
                 }
@@ -146,9 +161,7 @@ public class CashServiceImpl implements CashService {
                     throw new IllegalArgumentException("No such banknote available: " + banknote);
                 }
             }
-
         }
-
         saveBalances(BALANCE_FILE, cashier);
     }
 
@@ -182,7 +195,6 @@ public class CashServiceImpl implements CashService {
         String thirdLine;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(BALANCE_FILE))) {
-
             firstLine = reader.readLine();
             cashier.setName(firstLine.split(": ")[1]);
 
@@ -195,7 +207,6 @@ public class CashServiceImpl implements CashService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         return cashier;
     }
 
@@ -232,5 +243,4 @@ public class CashServiceImpl implements CashService {
                 cashier.getCashBalance_EUR().getCurrency().name() + "; " + cashier.getCashBalance_EUR().getTotalAmount() + "; " +
                 denominationsToString(cashier.getCashBalance_EUR().getDenominations()) + System.lineSeparator();
     }
-
 }
