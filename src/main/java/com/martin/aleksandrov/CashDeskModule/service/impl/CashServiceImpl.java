@@ -75,18 +75,18 @@ public class CashServiceImpl implements CashService {
 
     @Override
     public String denominationsToString(Map<String, Integer> denominations) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder denominationBuilder = new StringBuilder();
         List<Map.Entry<String, Integer>> entryList = new ArrayList<>(denominations.entrySet());
         Iterator<Map.Entry<String, Integer>> iterator = entryList.iterator();
 
         while (iterator.hasNext()) {
             Map.Entry<String, Integer> entry = iterator.next();
-            sb.append(entry.getValue()).append("x").append(entry.getKey());
+            denominationBuilder.append(entry.getValue()).append("x").append(entry.getKey());
             if (iterator.hasNext()) {
-                sb.append(", ");
+                denominationBuilder.append(", ");
             }
         }
-        return sb.toString();
+        return denominationBuilder.toString();
     }
 
 
