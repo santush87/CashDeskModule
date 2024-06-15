@@ -60,14 +60,14 @@ public class CashServiceImpl implements CashService {
         }
 
 
-        this.updateBalance(cashOperation);
+        this.updateData(cashOperation);
         this.recordTransaction(cashOperation);
         return "Operation processed successfully.";
     }
 
 
     private void recordTransaction(CashOperation cashOperation) throws IOException {
-        try (FileWriter writer = new FileWriter(TRANSACTION_FILE, true)) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACTION_FILE, true))) {
             writer.write(cashOperation.getType().name() + "; " + cashOperation.getCurrency().name() + "; " + cashOperation.getAmount() + ", "
                     + this.denominationsToString(cashOperation.getDenominations()) + System.lineSeparator());
         }
@@ -90,7 +90,7 @@ public class CashServiceImpl implements CashService {
     }
 
 
-    private void updateBalance(CashOperation cashOperation) throws LowerThanZeroException {
+    private void updateData(CashOperation cashOperation) throws LowerThanZeroException {
         Cashier cashier = getCashier();
 
         String currency = cashOperation.getCurrency().name();
@@ -168,7 +168,7 @@ public class CashServiceImpl implements CashService {
 
     @Override
     public void saveBalances(String balanceFile, Cashier cashier) {
-        try (FileWriter writer = new FileWriter(balanceFile)) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(balanceFile))) {
             writer.write("Cashier: " + cashier.getName() + System.lineSeparator());
             writer.write(cashier.getCashBalance_BGN().getCurrency().name() + "; " + cashier.getCashBalance_BGN().getTotalAmount() + "; " +
                     denominationsToString(cashier.getCashBalance_BGN().getDenominations()) + System.lineSeparator());
@@ -237,7 +237,7 @@ public class CashServiceImpl implements CashService {
     @Override
     public String getBalances() {
         Cashier cashier = getCashier();
-        return cashier.getName() + System.lineSeparator() +
+        return "Cashier: " + cashier.getName() + System.lineSeparator() +
                 cashier.getCashBalance_BGN().getCurrency().name() + "; " + cashier.getCashBalance_BGN().getTotalAmount() + "; " +
                 denominationsToString(cashier.getCashBalance_BGN().getDenominations()) + System.lineSeparator() +
                 cashier.getCashBalance_EUR().getCurrency().name() + "; " + cashier.getCashBalance_EUR().getTotalAmount() + "; " +
